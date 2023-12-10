@@ -51,6 +51,7 @@ def train_cifar10():
             print(f"Epoch {epoch+1}, Loss: {running_loss / len(trainloader)}")
 
         print("Training finished.")
+    torch.save(net.state_dict(), 'model_checkpoint.pth')
 
 if __name__ == '__main__':
     train_cifar10()
