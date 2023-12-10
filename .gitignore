@@ -859,5 +859,8 @@ FodyWeavers.xsd
 
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
+data/
+mlruns/
 
 # End of https://www.toptal.com/developers/gitignore/api/data,audio,macos,dotenv,images,python,pycharm,database,visualstudio,jupyternotebooks,visualstudiocode,git
+/data
