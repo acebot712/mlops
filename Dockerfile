@@ -1,7 +1,7 @@
 FROM python:3.8-slim
 
 # Install ONNX runtime and FastAPI dependencies
-RUN pip install onnxruntime fastapi uvicorn
+RUN pip install onnxruntime fastapi uvicorn Pillow
 
 # Create a directory for the app and set it as the working directory
 WORKDIR /app
