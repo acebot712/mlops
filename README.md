@@ -1,5 +1,7 @@
 # MLOps (Work in Progress)
 
+[![CI/CD Pipeline](https://github.com/acebot712/mlops/actions/workflows/ci_cd.yml/badge.svg)](https://github.com/acebot712/mlops/actions/workflows/ci_cd.yml)
+
 This repository is to demonstrate MLOps infrastructure setup for production environment. For this demo we are gonna do a single server deployment of services.
 
 ## MLflow: Tracking and Managing Your Machine Learning Experiments
