@@ -12,23 +12,29 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-
+      
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      
+      - name: Install DVC
+        run: pip install dvc
+      
+      - name: Pull model with DVC
+        run: dvc pull model.onnx.dvc
 
       - name: Install dependencies
         run: |
           pip install torch torchvision onnx onnxruntime
-
+      
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }} # This token is provided by GitHub Actions
-
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
@@ -36,3 +42,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ghcr.io/acebot712/mlops:latest
+      
+      # No deployment step needed in the workflow since you'll be running the server locally
