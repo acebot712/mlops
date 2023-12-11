@@ -1,8 +1,8 @@
-# Stage 1: Build environment
-FROM python:3.8-slim as builder
+# Use a specific python slim image version for reproducibility
+FROM python:3.8-slim as base
 
-# Install ONNX runtime and FastAPI dependencies
-RUN pip install onnxruntime fastapi uvicorn Pillow python-multipart torchvision
+# Stage 1: Build environment
+FROM base as builder
 
 # Create a directory for the app
 WORKDIR /app
@@ -11,7 +11,11 @@ WORKDIR /app
 COPY model.onnx serve_model.py ./
 
 # Stage 2: Runtime environment
-FROM python:3.8-slim
+FROM base
+
+# Install runtime dependencies
+RUN pip install --no-cache-dir onnxruntime fastapi uvicorn Pillow python-multipart torchvision \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy only necessary files from the builder stage
 COPY --from=builder /app /app
