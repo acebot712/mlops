@@ -28,10 +28,6 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS='gcs-creds.json'
           dvc pull model.onnx.dvc
     
-      - name: Install dependencies
-        run: |
-          pip install torch torchvision onnx onnxruntime
-        
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:

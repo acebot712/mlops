@@ -1,14 +1,23 @@
-FROM python:3.8-slim
+# Stage 1: Build environment
+FROM python:3.8-slim as builder
 
 # Install ONNX runtime and FastAPI dependencies
 RUN pip install onnxruntime fastapi uvicorn Pillow python-multipart torchvision
 
-# Create a directory for the app and set it as the working directory
+# Create a directory for the app
 WORKDIR /app
 
-# Copy model and script into the container
-COPY model.onnx /app/model.onnx
-COPY serve_model.py /app/serve_model.py
+# Copy model and script into the builder image
+COPY model.onnx serve_model.py ./
+
+# Stage 2: Runtime environment
+FROM python:3.8-slim
+
+# Copy only necessary files from the builder stage
+COPY --from=builder /app /app
+
+# Set the working directory
+WORKDIR /app
 
 # Expose the port the application will run on
 EXPOSE 8000
