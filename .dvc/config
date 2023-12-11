@@ -1,0 +1,4 @@
+[core]
+    remote = mygcsremote
+['remote "mygcsremote"']
+    url = gs://models-and-data/
