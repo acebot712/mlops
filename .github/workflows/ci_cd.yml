@@ -9,32 +9,36 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: ACTIONS_ENV  # Referencing the environment you've created
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-      
+        
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      
-      - name: Install DVC
-        run: pip install dvc
-      
+        
+      - name: Install DVC with GCS support
+        run: pip install 'dvc[gs]'
+        
       - name: Pull model with DVC
-        run: dvc pull model.onnx.dvc
-
+        run: |
+          echo "${{ secrets.GCS_CREDENTIALS }}" | base64 --decode > gcs-creds.json
+          export GOOGLE_APPLICATION_CREDENTIALS='gcs-creds.json'
+          dvc pull model.onnx.dvc
+    
       - name: Install dependencies
         run: |
           pip install torch torchvision onnx onnxruntime
-      
+        
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+        
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
@@ -42,5 +46,3 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ghcr.io/acebot712/mlops:latest
-      
-      # No deployment step needed in the workflow since you'll be running the server locally
