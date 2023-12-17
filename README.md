@@ -49,3 +49,22 @@ In this tutorial, we'll explore how Data Version Control (DVC) can be a game-cha
 **Analogous to GitHub**: Just as GitHub hosts and manages your source code repositories, cloud storage solutions can be analogous to where you store your machine learning models and checkpoints. DVC ensures that you version, track, and share your data and models as effectively as you do with your code.
 
 With DVC, you'll be able to version and track your machine learning project assets with confidence, knowing that your Git repository remains agile and focused on code while your data and models are handled efficiently in the background. Let's get started with DVC and supercharge your machine learning workflow!
+
+
+## Run instructions
+
+```sh
+docker pull ghcr.io/acebot712/mlops:latest
+```
+
+```sh
+docker run --platform linux/amd64 -p 8000:8000 ghcr.io/acebot712/mlops:latest
+```
+
+```sh
+curl -X 'POST' \
+  'http://localhost:8000/predict/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@cat.jpeg'
+```
