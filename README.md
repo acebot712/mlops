@@ -68,26 +68,27 @@ curl -X 'POST' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@cat.jpeg'
 ```
-## Note on the DVC artefacts
 
-`model.py` was replaced (batch norm, 308,394 parameters, down from 1,147,466)
-and `train.py` rewritten around it. The DVC pointers in this repo still reference
-artefacts produced by the **previous** architecture:
+## DVC artefacts
+
+The remote is `gs://abhijoysarkar-mlops-dvc`. Three files are tracked:
 
 ```
-model_checkpoint.pth.dvc   9,186,418 bytes, old architecture
-model.onnx.dvc             4,591,846 bytes, old architecture
+model_checkpoint.pth   2,493,693 bytes   PyTorch weights + optimiser state
+model.onnx                 5,875 bytes   the graph
+model.onnx.data        1,229,184 bytes   the weights the graph refers to
 ```
 
-`dvc pull` will fetch those, and loading them into the current `Net` fails with a
-shape mismatch. Regenerate rather than pull:
+`model.onnx.data` is tracked deliberately. ONNX puts large initialisers in an
+external file beside the graph, so a `model.onnx` on its own is 6 KB of topology
+that fails at session creation with no weights to load. Pulling one without the
+other is the single easiest way to ship a broken container.
 
 ```bash
-python train.py            # ~60s on an M-series GPU, reaches about 85% val
-python torch_to_onnx.py    # exports and asserts numerical agreement
-dvc add model_checkpoint.pth model.onnx
-dvc push
+dvc pull                   # fetches all three
+python torch_to_onnx.py    # or regenerate; asserts agreement and a dynamic batch axis
 ```
 
-That needs write access to the `mygcsremote` bucket, so it has to be done by
-someone holding those credentials.
+The previous remote, `gs://models-and-data`, no longer exists, and the artefacts
+it held were built from an older architecture that the current `model.py` cannot
+load. Nothing points at it any more.

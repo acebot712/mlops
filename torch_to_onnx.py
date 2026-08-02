@@ -39,6 +39,12 @@ def main():
         net, dummy_input, ONNX_PATH,
         export_params=True, opset_version=OPSET, do_constant_folding=True,
         input_names=["input"], output_names=["output"],
+        # Without this the graph pins batch to 1 and the served model rejects
+        # anything else at runtime with "Got: 4 Expected: 1". The dynamo
+        # exporter warns that dynamic_shapes is the newer spelling; this works,
+        # and a serving artefact that cannot take a batch is not worth the
+        # tidier warning log.
+        dynamic_axes={"input": {0: "batch"}, "output": {0: "batch"}},
     )
 
     # Agreement check. Several inputs, not one -- a single random tensor can
@@ -46,9 +52,14 @@ def main():
     import onnxruntime as ort
 
     session = ort.InferenceSession(ONNX_PATH)
+    declared = session.get_inputs()[0].shape
+    if isinstance(declared[0], int):
+        raise SystemExit(f"export pinned batch to {declared[0]}; serving needs a dynamic batch axis")
     worst = 0.0
-    for _ in range(16):
-        x = torch.randn(1, 3, 32, 32)
+    # Several batch sizes, because a fixed-batch export passes a batch-1 check
+    # and then fails on the first real request.
+    for bs in (1, 1, 2, 4, 8, 16):
+        x = torch.randn(bs, 3, 32, 32)
         with torch.no_grad():
             expected = net(x).numpy()
         actual = session.run(None, {"input": x.numpy()})[0]
