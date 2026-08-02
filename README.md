@@ -68,3 +68,26 @@ curl -X 'POST' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@cat.jpeg'
 ```
+## Note on the DVC artefacts
+
+`model.py` was replaced (batch norm, 308,394 parameters, down from 1,147,466)
+and `train.py` rewritten around it. The DVC pointers in this repo still reference
+artefacts produced by the **previous** architecture:
+
+```
+model_checkpoint.pth.dvc   9,186,418 bytes, old architecture
+model.onnx.dvc             4,591,846 bytes, old architecture
+```
+
+`dvc pull` will fetch those, and loading them into the current `Net` fails with a
+shape mismatch. Regenerate rather than pull:
+
+```bash
+python train.py            # ~60s on an M-series GPU, reaches about 85% val
+python torch_to_onnx.py    # exports and asserts numerical agreement
+dvc add model_checkpoint.pth model.onnx
+dvc push
+```
+
+That needs write access to the `mygcsremote` bucket, so it has to be done by
+someone holding those credentials.

@@ -866,3 +866,6 @@ mlruns/
 /data
 /model_checkpoint.pth
 /model.onnx
+
+# ONNX external-weights sidecar, tracked by DVC alongside model.onnx
+model.onnx.data
